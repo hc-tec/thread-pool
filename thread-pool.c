@@ -4,7 +4,8 @@
 
 #include "thread-pool.h"
 
-static void thread_main_func(worker_t* worker) {
+static void
+thread_main_func(worker_t* worker) {
     while (1) {
         thread_pool_t* pool = worker->pool;
         if(pool == NULL) {
@@ -62,11 +63,21 @@ thread_pool_create(int thread_num) {
     return pool;
 }
 
-void thread_pool_destroy(thread_pool_t* pool) {
+void
+thread_pool_destroy(thread_pool_t* pool) {
+    worker_t* worker = NULL;
+    for(int i=0;i<pool->thread_num;++i) {
+        worker = pool->workers[i];
+        if(worker == NULL) continue;
+        worker->pool = NULL;
+        pthread_detach(worker->tid);
+        free(worker);
+    }
     free(pool);
 }
 
-int thread_pool_push_task(thread_pool_t* pool, void (*func)(void*), void* arg) {
+int
+thread_pool_push_task(thread_pool_t* pool, void (*func)(void*), void* arg) {
     task_t* task = calloc(1, sizeof(task_t));
     if(task == NULL) {
         return -1;

@@ -22,5 +22,6 @@ int main() {
         }
     }
     sleep(2);
+    thread_pool_destroy(pool);
     return 0;
 }
