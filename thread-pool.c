@@ -27,11 +27,17 @@ static void thread_main_func(worker_t* worker) {
     pthread_exit(NULL);
 }
 
-int thread_pool_create(thread_pool_t* pool, int thread_num) {
-    pool = calloc(1, sizeof(thread_pool_t));
+thread_pool_t*
+thread_pool_create(int thread_num) {
+    thread_pool_t* pool = calloc(1, sizeof(thread_pool_t));
     int i;
     if(pool == NULL) {
-        return -1;
+        return NULL;
+    }
+
+    pool->workers = calloc(thread_num, sizeof(worker_t*));
+    if(pool->workers == NULL) {
+        return NULL;
     }
 
     TAILQ_INIT(&pool->task_queue);
@@ -45,15 +51,15 @@ int thread_pool_create(thread_pool_t* pool, int thread_num) {
     for(i=0;i < thread_num;++i) {
         worker_t* worker = calloc(1, sizeof(worker_t));
         if(worker == NULL) {
-            return -2;
+            return NULL;
         }
+        pool->workers[i] = worker;
+        worker->idx = i;
         worker->pool = pool;
         pthread_create(&worker->tid, NULL,
                        (void *(*)(void *)) thread_main_func, worker);
-//        pthread_join(worker->tid, NULL);
-//        pthread_detach(worker->tid);
     }
-    return 0;
+    return pool;
 }
 
 void thread_pool_destroy(thread_pool_t* pool) {

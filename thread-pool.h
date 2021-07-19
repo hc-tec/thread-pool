@@ -21,13 +21,14 @@ struct task {
 TAILQ_HEAD(task_queue, task);
 
 struct worker {
+    int idx;
     pthread_t tid;
     struct thread_pool* pool;
 };
 
 struct thread_pool {
 
-    struct worker* workers;
+    struct worker* *workers;
     struct task_queue task_queue;
 
     int thread_num;
@@ -41,7 +42,7 @@ typedef struct task task_t;
 typedef struct worker worker_t;
 typedef struct thread_pool thread_pool_t;
 
-int thread_pool_create(thread_pool_t* pool, int thread_num);
+thread_pool_t* thread_pool_create(int thread_num);
 
 void thread_pool_destroy(thread_pool_t* pool);
 
